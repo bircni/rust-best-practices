@@ -1,9 +1,10 @@
 [package]
 name = "rust-best-practices"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2024"
 
 [dependencies]
+anyhow = "1.0.97"
 
 [lints.rust]
 unsafe_code = "deny"
@@ -32,7 +33,6 @@ pedantic = "warn"
 nursery = "warn"
 
 # Additional lints from https://rust-lang.github.io/rust-clippy/master/index.html?groups=restriction
-absolute_paths = "warn"
 allow_attributes = "warn"
 allow_attributes_without_reason = "warn"
 assertions_on_result_states = "warn"
@@ -41,7 +41,6 @@ clone_on_ref_ptr = "warn"
 expect_used = "warn"
 missing_assert_message = "warn"
 panic_in_result_fn = "warn"
-shadow_reuse = "warn"
 str_to_string = "warn"
 todo = "warn"
 unwrap_used = "warn"
