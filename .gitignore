@@ -1,0 +1,4 @@
+/target
+# Cargo.lock is intentionally not ignored, as it is needed for reproducible builds
+*.profraw
+.DS_Store
