@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "rust-lang.rust-analyzer",
+    "tamasfe.even-better-toml",
+    "dustypomerleau.rust-syntax",
+    "usernamehw.errorlens",
+    "fill-labs.dependi"
+  ]
+}

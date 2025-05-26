@@ -1,36 +1,58 @@
-use anyhow::Context;
+use clap::Parser;
+use serde::Deserialize;
 
-fn main() {
-    println!("Hello, world!");
-    println!("My version is {}", env!("CARGO_PKG_VERSION"));
-    // if you use a function or macro that is not allowed by clippy,
-    // please think about if you can use a different function or macro
-    // or if you can use a different approach.
-    // if you can't, please add an exception to the clippy lint
-    // and add a comment why you need it.
-    // for example:
-
-    #[expect(clippy::expect_used, reason = "This is an example")]
-    let _ = std::fs::read_to_string("Cargo.toml").expect("Failed to read Cargo.toml");
-
-    let anyhow_result = example_anyhow();
-    // Handle the result of the function you could also make the main function return a Result
-    // and use the ? operator to propagate the error
-    // but in this example we want to handle the error and do not want to hard exit
-    // the program if the file does not exist
-    match anyhow_result {
-        // we do not use the result here so we use _ to ignore the result
-        Ok(_) => println!("Success with result"),
-        Err(e) => eprintln!("Error: {e}"),
-    }
+/// Simple program to fetch weather information from wttr.in
+#[derive(Parser)]
+#[command(author, version, about)]
+struct Cli {
+    /// City name
+    cities: Vec<String>,
+    /// Use imperial units (Fahrenheit)
+    #[arg(long)]
+    units: bool,
 }
 
-/// This is an example of using anyhow
-/// It will return an error if the file does not exist
-fn example_anyhow() -> anyhow::Result<String> {
-    std::fs::read_to_string("Cargo.toml")
-        // .context casts the error to anyhow::Error
-        // and adds a context message to the error
-        // this is useful if you want to add more information to the error
-        .context("Failed to read Cargo.toml")
+#[derive(Debug, Deserialize)]
+struct WeatherResponse {
+    current_condition: Vec<CurrentCondition>,
+}
+
+#[derive(Debug, Deserialize)]
+struct CurrentCondition {
+    temp_C: String,
+    temp_F: String,
+    weatherDesc: Vec<Description>,
+}
+
+#[derive(Debug, Deserialize)]
+struct Description {
+    value: String,
+}
+
+fn main() {
+    let cli = Cli::parse();
+
+    for city in &cli.cities {
+        let url = format!("https://wttr.in/{}?format=j1", city);
+        let res = ureq::get(&url).call();
+
+        if res.is_ok() {
+            let mut response = res.unwrap();
+            let body = response.body_mut();
+            let body: WeatherResponse = body.read_json().expect("Failed to parse JSON");
+            let cond = &body.current_condition[0];
+            println!(
+                "{}: {}°, {}",
+                city,
+                if cli.units {
+                    &cond.temp_F
+                } else {
+                    &cond.temp_C
+                },
+                cond.weatherDesc[0].value
+            );
+        } else {
+            eprintln!("Failed to fetch weather for {}", city);
+        }
+    }
 }
